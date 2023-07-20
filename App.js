@@ -32,7 +32,6 @@ export default function App() {
     .then((response)=> response.json())
     .then((data)=>{return data.data})
     .then(data=>{
-      console.log("cek data",data)
       setItems(data)
       setFetchingDataState(false)
     })
@@ -70,23 +69,40 @@ export default function App() {
     .catch(error=>{console.error(error)})
   }
 
-  // const updateShares = ({id})=>{
-  //   fetch(`${apiUrl}/${id}`, {
-  //   method: "PUT",
-  //   body: JSON.stringify(newShares),
-  //   })
-  //   .then((response) => response.json())
-  //   .then((responseData) => {
-  //     console.log(JSON.stringify(responseData));
-  //   })
-  //   .catch(error=>{console.error(error)})
-  // }
+  const updateShares = ({id})=>{
+    fetch(`${apiUrl}/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(newShares),
+    })
+    .then((response) => response.json())
+    .then((responseData) => {
+      console.log(JSON.stringify(responseData));
+    })
+    .catch(error=>{console.error(error)})
+  }
 
   const goSaveShares = ()=>[
     setTimeout(()=>{
       saveShares()
     },3000)
   ]
+
+  const showSelectedShares = (name)=>{
+    const shares = items.find((item)=>item.name === name)
+    console.log('show share',shares)
+    setSharesName(shares.name)
+    setBuyPrice(shares.buyPrice)
+    setSharesAmount(shares.amount)
+    setTotalbuyPrice(shares.totalBuyPrice)
+    setSellPrice(shares.sellPrice)
+    setProfit(shares.profit)
+    setNetProfit(shares.netProfit)
+    setTotalProfitSellPrice(shares.totalPorfitSellPrice)
+    setLossPosibility(shares.loss)
+    setLossPric(shares.lossPrice)
+    setNetLoss(shares.netLoss)
+    setTotalLossSellPrice(shares.totalLossSellPrice)
+  }
 
   if(fetchingData){
     return <Loading/>
@@ -98,7 +114,10 @@ export default function App() {
       <SavedPlanView 
         data={items}
         selectedSavedShares={selectedSavedShares}
-        onValueChange={(itemValue,_)=>setselectedSavedShares(itemValue)}/>
+        onValueChange={(itemValue,_)=>{
+          setselectedSavedShares(itemValue)
+          showSelectedShares(itemValue)
+          }}/>
       <BuyPlanView 
         onShareInput={(text)=>setSharesName(text)} 
         onBuyPriceInput={(text)=>setBuyPrice(+text)} 
@@ -107,7 +126,8 @@ export default function App() {
           setTotalbuyPrice(buyPrice*sharesAmount)
         }}
         buyPrice={buyPrice}
-        sharesAmount={sharesAmount}/>
+        sharesAmount={sharesAmount}
+        sharesName={sharesName}/>
       <ProfitPlanView
         onSalePriceInput={(text)=>{
           setSellPrice(+text)
@@ -189,7 +209,7 @@ const SavedPlanView = ({data, selectedSavedShares, onValueChange})=>{
     <View style={styles.itemContainer}>
       <Text style={styles.itemTitle}>Select from Saved Plan</Text>
       <Picker
-        selectedSavedShares={selectedSavedShares}
+        selectedValue={selectedSavedShares}
         style={{ height: 50, width: 150 }}
         onValueChange={(itemValue, itemIndex) => onValueChange(itemValue,itemIndex)}
       >
@@ -202,7 +222,7 @@ const SavedPlanView = ({data, selectedSavedShares, onValueChange})=>{
   )
 }
 
-const BuyPlanView = ({onShareInput, onBuyPriceInput, onShareAmountInput, buyPrice, sharesAmount})=>{
+const BuyPlanView = ({onShareInput, onBuyPriceInput, onShareAmountInput, buyPrice, sharesAmount, sharesName})=>{
   return(
     <View style={styles.itemContainer}>
       <View flexDirection='row' alignItems='center'>
@@ -217,6 +237,7 @@ const BuyPlanView = ({onShareInput, onBuyPriceInput, onShareAmountInput, buyPric
             placeholder="tulis disini"
             keyboardType="text"
             onChangeText={(text)=>onShareInput(text)}
+            value={sharesName}
         />
         </View>
         <View style={styles.itemInputContainer}>
@@ -226,6 +247,7 @@ const BuyPlanView = ({onShareInput, onBuyPriceInput, onShareAmountInput, buyPric
             placeholder="tulis disini"
             keyboardType="numeric"
             onChangeText={(text)=>onBuyPriceInput(text)}
+            value={buyPrice}
         />
         </View>
         <View style={styles.itemInputContainer}>
@@ -235,6 +257,7 @@ const BuyPlanView = ({onShareInput, onBuyPriceInput, onShareAmountInput, buyPric
             placeholder="tulis disini"
             keyboardType="numeric"
             onChangeText={(text)=>onShareAmountInput(text)}
+            value={sharesAmount}
         />
         </View>
       </View>
@@ -262,6 +285,7 @@ const ProfitPlanView = ({onSalePriceInput,sellPrice,buyPrice,sharesAmount})=>{
             placeholder="tulis disini"
             keyboardType="numeric"
             onChangeText={(text)=>onSalePriceInput(text)}
+            value={sellPrice}
         />
         </View>
         <View style={styles.itemInputContainer}>
@@ -297,6 +321,7 @@ const LostPossibilityView = ({onLossInput, lossPosibility, buyPrice, sharesAmoun
             placeholder="tulis disini"
             keyboardType="numeric"
             onChangeText={(text)=>onLossInput(text)}
+            value={lossPosibility}
         />
         </View>
         <View style={styles.itemInputContainer}>
