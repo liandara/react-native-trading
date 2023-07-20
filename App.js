@@ -13,10 +13,21 @@ export default function App() {
   const [sharesName, setSharesName] = useState("");
   const [buyPrice, setBuyPrice] = useState(0);
   const [sharesAmount, setSharesAmount] = useState(0);
+  const [totalBuyPrice, setTotalbuyPrice] = useState(0);
   const [sellPrice, setSellPrice] = useState(0);
+  const [profit, setProfit] = useState(0);
+  const [netProfit, setNetProfit] = useState(0);
+  const [totalPorfitSellPrice, setTotalProfitSellPrice] = useState(0);
   const [lossPosibility, setLossPosibility] = useState(0);
+  const [lossPrice, setLossPric] = useState(0);
+  const [netLoss, setNetLoss] = useState(0);
+  const [totalLossSellPrice, setTotalLossSellPrice] = useState(0);
   
   React.useEffect(()=>{
+    fetchSavedShares()
+  }, [])
+
+  const fetchSavedShares = ()=>{
     fetch(apiUrl)
     .then((response)=> response.json())
     .then((data)=>{return data.data})
@@ -26,7 +37,56 @@ export default function App() {
       setFetchingDataState(false)
     })
     .catch(error=>{console.error(error)})
-  }, [])
+  }
+
+  const newShares = {
+    name: sharesName,
+    buy_price: buyPrice,
+    amount: sharesAmount,
+    total_buy_price: totalBuyPrice,
+    sell_price : sellPrice,
+    profit: profit,
+    net_profit: netProfit,
+    total_profit_sell_price: totalPorfitSellPrice,
+    loss: lossPosibility,
+    loss_price: lossPrice,
+    net_loss: netLoss,
+    total_loss_sell_price: totalLossSellPrice
+  }
+
+  const saveShares = ()=>{
+    fetch(apiUrl, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(newShares),
+  })
+    .then((response) => response.json())
+    .then((responseData) => {
+      console.log(JSON.stringify(responseData));
+    })
+    .catch(error=>{console.error(error)})
+  }
+
+  // const updateShares = ({id})=>{
+  //   fetch(`${apiUrl}/${id}`, {
+  //   method: "PUT",
+  //   body: JSON.stringify(newShares),
+  //   })
+  //   .then((response) => response.json())
+  //   .then((responseData) => {
+  //     console.log(JSON.stringify(responseData));
+  //   })
+  //   .catch(error=>{console.error(error)})
+  // }
+
+  const goSaveShares = ()=>[
+    setTimeout(()=>{
+      saveShares()
+    },3000)
+  ]
 
   if(fetchingData){
     return <Loading/>
@@ -38,20 +98,34 @@ export default function App() {
       <SavedPlanView 
         data={items}
         selectedSavedShares={selectedSavedShares}
-        onValueChange={(itemValue,itemIndex)=>setselectedSavedShares(itemValue)}/>
+        onValueChange={(itemValue,_)=>setselectedSavedShares(itemValue)}/>
       <BuyPlanView 
-        onShareInput={(text)=>setselectedSavedShares(text)} 
+        onShareInput={(text)=>setSharesName(text)} 
         onBuyPriceInput={(text)=>setBuyPrice(+text)} 
-        onShareAmountInput={(text)=>setSharesAmount(+text)}
+        onShareAmountInput={(text)=>{
+          setSharesAmount(+text)
+          setTotalbuyPrice(buyPrice*sharesAmount)
+        }}
         buyPrice={buyPrice}
         sharesAmount={sharesAmount}/>
       <ProfitPlanView
-        onSalePriceInput={(text)=>setSellPrice(+text)}
+        onSalePriceInput={(text)=>{
+          setSellPrice(+text)
+          setProfit(((sellPrice-buyPrice)/buyPrice)*100)
+          setNetProfit(buyPrice*((sellPrice-buyPrice)/buyPrice)*100)
+          setTotalProfitSellPrice(sellPrice*sharesAmount)
+        }}
         sellPrice={sellPrice}
         buyPrice={buyPrice}
         sharesAmount={sharesAmount}/>
       <LostPossibilityView
-        onLossInput={(text)=>setLossPosibility(+text)}
+        onLossInput={(text)=>{
+          setLossPosibility(+text)
+          setLossPric(buyPrice-((buyPrice*lossPosibility)/100))
+          setNetLoss((buyPrice*sharesAmount)-((buyPrice*lossPosibility)/100))
+          setTotalLossSellPrice((buyPrice-((buyPrice*lossPosibility)/100))*sharesAmount)
+          goSaveShares()
+        }}
         lossPosibility={lossPosibility}
         buyPrice={buyPrice}
         sharesAmount={sharesAmount}/>
