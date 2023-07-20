@@ -4,9 +4,7 @@ import React, {useState} from 'react';
 import {Picker} from '@react-native-picker/picker';
 
 export default function App() {
-  // const apiKey = '5ecd2fad8e814fb2a6c1ef65acb54b37'
-  const apiUrl = `http://127.0.0.1:8000/books`
-  // const apiUrl = `https://newsapi.org/v2/everything?q=comic&apiKey=${apiKey}`
+  const apiUrl = `http://127.0.0.1:8000/trades`
 
   const [items, setItems] = React.useState([])
   const[fetchingData, setFetchingDataState] = useState(true);
@@ -18,37 +16,27 @@ export default function App() {
   const [sellPrice, setSellPrice] = useState(0);
   const [lossPosibility, setLossPosibility] = useState(0);
   
-  // React.useEffect(()=>{
-  //   fetch(apiUrl)
-  //   .then((response)=> response.json())
-  //   .then((data)=>{return data.data})
-  //   .then(data=>{
-  //     setItems(data)
-  //     setFetchingDataState(false)
-  //   })
-  //   .catch(error=>{console.error(error)})
-  // }, [])
+  React.useEffect(()=>{
+    fetch(apiUrl)
+    .then((response)=> response.json())
+    .then((data)=>{return data.data})
+    .then(data=>{
+      console.log("cek data",data)
+      setItems(data)
+      setFetchingDataState(false)
+    })
+    .catch(error=>{console.error(error)})
+  }, [])
 
-  // if(fetchingData){
-  //   return <Loading/>
-  // }else{
-  //   return <TradingPlanScreen/>
-  // }
-  // return <TradingPlanScreen 
-  //   selectedSavedShares={selectedSavedShares} 
-  //   onValueChange={(itemValue,itemIndex)=>{setselectedSavedShares(itemValue)}}
-  //   onShareInput={(text)=>setSharesName(text)} 
-  //   onBuyPriceInput={(text)=>setBuyPrice(+text)} 
-  //   onShareAmountInput={(text)=>setSharesAmount(text)}
-  //   buyPrice={buyPrice}
-  //   sharesAmount={sharesAmount}
-  //   />
-
-  return(
-    <View style={styles.container}>
+  if(fetchingData){
+    return <Loading/>
+  }else{
+    return (
+      <View style={styles.container}>
       <Image style={styles.logo}
       source={require('./assets/ic_logo.png')}/>
       <SavedPlanView 
+        data={items}
         selectedSavedShares={selectedSavedShares}
         onValueChange={(itemValue,itemIndex)=>setselectedSavedShares(itemValue)}/>
       <BuyPlanView 
@@ -68,7 +56,8 @@ export default function App() {
         buyPrice={buyPrice}
         sharesAmount={sharesAmount}/>
     </View>
-  )
+    )
+  }
 }
 
 const styles = StyleSheet.create({
@@ -121,7 +110,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const SavedPlanView = ({selectedSavedShares, onValueChange})=>{
+const SavedPlanView = ({data, selectedSavedShares, onValueChange})=>{
   return(
     <View style={styles.itemContainer}>
       <Text style={styles.itemTitle}>Select from Saved Plan</Text>
@@ -130,8 +119,9 @@ const SavedPlanView = ({selectedSavedShares, onValueChange})=>{
         style={{ height: 50, width: 150 }}
         onValueChange={(itemValue, itemIndex) => onValueChange(itemValue,itemIndex)}
       >
-        <Picker.Item label="Java" value="java" />
-        <Picker.Item label="JavaScript" value="js" />
+        {data.map((item)=>{
+          return (<Picker.Item label={item.name} value={item.name} />)
+        })}
       </Picker>
       <Text style={styles.itemTitle}>Or fill your new own</Text>
     </View>
